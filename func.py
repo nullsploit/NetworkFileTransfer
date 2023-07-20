@@ -126,11 +126,11 @@ def discovery_server(app):
 
     # network_ip = get_ip_address()
     # print(f"IP: {network_ip}")
-    try:
-        discovery_button = getattr(app, "discovery_button")
-        discovery_button.destroy()
-    except:
-        pass
+    # try:
+    #     discovery_button = getattr(app, "discovery_button")
+    #     discovery_button.destroy()
+    # except:
+    #     pass
 
     if not Program.discovery_server_status:
         print("Server not started")
@@ -157,10 +157,10 @@ def discovery_server(app):
         Program.discovery_server_status = False
         print("Stopped discovery server")
         
-
-        discovery_button = customtkinter.CTkButton(text="Start Discovery", command=lambda:start_discovery_server(app), master=app.sidebar_frame)
-        setattr(app, "discovery_button", discovery_button)
-        app.discovery_button.grid(pady=4)
+        start_discovery_server(app)
+        # discovery_button = customtkinter.CTkButton(text="Start Discovery", command=lambda:start_discovery_server(app), master=app.sidebar_frame)
+        # setattr(app, "discovery_button", discovery_button)
+        # app.discovery_button.grid(pady=4)
 
 # def discovery_client():
 #     HOST = "127.0.0.1"  # The server's hostname or IP address
