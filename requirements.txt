@@ -1,0 +1,6 @@
+altgraph==0.17.3
+customtkinter==5.2.0
+darkdetect==0.8.0
+Pillow==10.0.0
+pyinstaller==5.13.0
+pyinstaller-hooks-contrib==2023.5

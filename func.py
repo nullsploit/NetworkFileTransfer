@@ -46,30 +46,32 @@ def send_string(sock, string):
 def send_int(sock, integer):
     sock.sendall(str(integer).encode() + b'\n')
 
-def transmit(sock, folder):
+def transmit(sock, folder, files):
     print(f'Sending folder: {folder}')
     send_string(sock, folder)
-    files = os.listdir(folder)
+    # files = os.listdir(folder)
     send_int(sock, len(files))
     for file in files:
-        path = os.path.join(folder, file)
+        filename = file.split("/")[-1]
+        # path = os.path.join(folder, file)
+        path = file
         filesize = os.path.getsize(path)
-        print(f'Sending file: {file} ({filesize} bytes)')
+        print(f'Sending file: {filename} ({filesize} bytes)')
         send_string(sock, file)
         send_int(sock, filesize)
         with open(path, 'rb') as f:
             sock.sendall(f.read())
 
-def send_data(folder):
+def send_data():
     s = socket.socket()
-    s.connect(('localhost', 4563))
+    s.connect((Program.selected_server, 4563))
     with s:
-        transmit(s, folder)
+        transmit(s, "Data", Program.selected_files)
 
 
-def start_discovery_server():
+def start_discovery_server(app):
     Program.discovery_server_status = True
-    discovery_server_thread = threading.Thread(target=discovery_server)
+    discovery_server_thread = threading.Thread(target=lambda:discovery_server(app))
     discovery_server_thread.start()
 
 def start_discovery_client(app):
@@ -88,19 +90,21 @@ def discovery_client(app):
         ip_prefix = ".".join(network_ip.split(".")[0:-1])
         for ip_suffix in range(253):
             ip_suffix +=1
+
+            full_ip = f"{ip_prefix}.{ip_suffix}"
             # print(f"checking '{ip_prefix}.{ip_suffix}'...")
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     s.settimeout(0.1)
-                    s.connect((f"{ip_prefix}.{ip_suffix}", 4562))
+                    s.connect((f"{full_ip}", 4562))
 
-                    if f"{ip_prefix}.{ip_suffix}" not in Program.discovered_servers and not f"{ip_prefix}.{ip_suffix}" == network_ip:
+                    if f"{full_ip}" not in Program.discovered_servers and not f"{full_ip}" == network_ip:
                     # print(f"Found '{ip_prefix}.{ip_suffix}' is valid host")
-                        Program.discovered_servers.append(f"{ip_prefix}.{ip_suffix}")
+                        Program.discovered_servers.append(f"{full_ip}")
 
-                        server_button = customtkinter.CTkButton(text=f"{ip_prefix}.{ip_suffix}", master=app.sidebar_frame)
+                        server_button = customtkinter.CTkButton(text=full_ip, command=select_server(full_ip), master=app.sidebar_frame)
                         server_button.grid(pady=4)
-                        setattr(app.sidebar_frame, f"server-{ip_prefix}.{ip_suffix}", server_button)
+                        setattr(app.sidebar_frame, f"server-{full_ip}", server_button)
 
                         s.sendall(b"conn-ping")
                         s.close()
@@ -114,7 +118,7 @@ def discovery_client(app):
                 # data = s.recv(1024)
 
 
-def discovery_server():
+def discovery_server(app):
     network_ip = get_ip_address()
     HOST = network_ip  # Standard loopback interface address (localhost)
     # HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
@@ -122,6 +126,11 @@ def discovery_server():
 
     # network_ip = get_ip_address()
     # print(f"IP: {network_ip}")
+    try:
+        discovery_button = getattr(app, "discovery_button")
+        discovery_button.destroy()
+    except:
+        pass
 
     if not Program.discovery_server_status:
         print("Server not started")
@@ -145,7 +154,13 @@ def discovery_server():
                     break
                 print("received", data)
                 conn.sendall(data)
+        Program.discovery_server_status = False
+        print("Stopped discovery server")
+        
 
+        discovery_button = customtkinter.CTkButton(text="Start Discovery", command=lambda:start_discovery_server(app), master=app.sidebar_frame)
+        setattr(app, "discovery_button", discovery_button)
+        app.discovery_button.grid(pady=4)
 
 # def discovery_client():
 #     HOST = "127.0.0.1"  # The server's hostname or IP address
@@ -190,6 +205,27 @@ def server():
                         f.write(data)
 
 
+def select_server(server_ip):
+    Program.selected_server = server_ip
+    print(f"Selected '{server_ip}' as server")
 
-def upload():
-    pass
+
+def upload(app):
+    if not Program.selected_server:
+        return
+
+    setattr(app, "progressbar", customtkinter.CTkProgressBar(app))
+    app.progressbar.grid(padx=0, pady=4, column=1, row=2, columnspan=3)
+    app.progressbar.configure(mode="indeterminnate")
+    app.progressbar.start()
+
+    send_data()
+
+    progress_bar = getattr(app, "progressbar")
+    progress_bar.destroy()
+
+
+
+    # server_ip = Program.selected_server
+
+    
