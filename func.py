@@ -112,18 +112,27 @@ def discovery_client(app):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.settimeout(0.1)
-                s.connect((f"{full_ip}", 4562))
+                try:
+                    s.connect((f"{full_ip}", 4562))
 
-                if f"{full_ip}" not in Program.discovered_servers and not f"{full_ip}" == network_ip:
-                    print(f"Found '{ip_prefix}.{ip_suffix}' is valid host")
-                    Program.discovered_servers.append(f"{full_ip}")
+                    if f"{full_ip}" not in Program.discovered_servers and not f"{full_ip}" == network_ip:
+                        # s.sendall(b"conn-ping")
+                        s.send(b"conn-ping")
+                        data = s.recv(1024)
+                        tgt_ip = data.decode()
+                        s.close()
+                        
+                        print(f"Found '{ip_prefix}.{ip_suffix}' is valid host")
+                        Program.discovered_servers.append(f"{full_ip}")
 
-                    server_button = customtkinter.CTkButton(text=full_ip, command=lambda:select_server(full_ip), master=app.sidebar_frame)
-                    server_button.grid(pady=4)
-                    setattr(app.sidebar_frame, f"server-{full_ip}", server_button)
+                        server_button = customtkinter.CTkButton(text=full_ip, command=lambda:select_server(tgt_ip), master=app.sidebar_frame)
+                        server_button.grid(pady=4)
+                        setattr(app.sidebar_frame, f"server-{full_ip}", server_button)
 
-                    s.sendall(b"conn-ping")
-                    s.close()
+                except Exception as e:
+                    if not str(e) == "timed out":
+                        print(e)
+                    pass
         except:
             pass
                 # if f"{ip_prefix}.{ip_suffix}" in Program.discovered_servers:
@@ -170,7 +179,8 @@ def discovery_server(app):
                 if not data:
                     break
                 print("received", data)
-                conn.sendall(data)
+                if data.decode() == "conn-ping":
+                    conn.sendall(network_ip.encode())
         Program.discovery_server_status = False
         print("Stopped discovery server")
         
