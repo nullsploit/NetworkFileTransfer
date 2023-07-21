@@ -192,8 +192,9 @@ def discovery_server(app):
 
 def server():
     # if __name__ == '__main__':
+    network_ip = get_ip_address()
     s = socket.socket()
-    s.bind(('', 4563))
+    s.bind((network_ip, 4563))
     s.listen()
 
     while True:
