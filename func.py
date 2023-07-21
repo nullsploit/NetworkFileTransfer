@@ -86,8 +86,11 @@ def start_discovery_server(app):
     discovery_server_thread.start()
 
 def start_discovery_client(app):
-    Program.discovery_server_status = True
     discovery_thread = threading.Thread(target=lambda:discovery_client(app))
+    discovery_thread.start()
+
+def start_transfer_server():
+    discovery_thread = threading.Thread(target=server)
     discovery_thread.start()
 
 
@@ -113,7 +116,7 @@ def discovery_client(app):
                     print(f"Found '{ip_prefix}.{ip_suffix}' is valid host")
                     Program.discovered_servers.append(f"{full_ip}")
 
-                    server_button = customtkinter.CTkButton(text=full_ip, command=select_server(full_ip), master=app.sidebar_frame)
+                    server_button = customtkinter.CTkButton(text=full_ip, command=lambda:select_server(full_ip), master=app.sidebar_frame)
                     server_button.grid(pady=4)
                     setattr(app.sidebar_frame, f"server-{full_ip}", server_button)
 
@@ -230,6 +233,8 @@ def upload(app):
     app.progressbar.grid(padx=0, pady=4, column=1, row=2, columnspan=3)
     app.progressbar.configure(mode="indeterminnate")
     app.progressbar.start()
+
+    dummy_val = 2
 
     send_data()
 

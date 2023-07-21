@@ -47,7 +47,7 @@ class App(customtkinter.CTk):
 
         # self.folder_button = customtkinter.CTkButton(text="Select Folder", command=lambda:selectFolder(self), master=self.sidebar_frame)
         # self.folder_button.grid(pady=4)
-        self.discovery_server_button = customtkinter.CTkButton(text=f"Scan", command=lambda:start_discovery_client(), master=self.sidebar_frame)
+        self.discovery_server_button = customtkinter.CTkButton(text=f"Scan", command=lambda:start_discovery_client(self), master=self.sidebar_frame)
         self.discovery_server_button.grid(pady=4)
 
         label = customtkinter.CTkLabel(self.sidebar_frame, text="Servers", fg_color="transparent")
@@ -60,6 +60,7 @@ class App(customtkinter.CTk):
 
         start_discovery_server(self)
         start_discovery_client(self)
+        start_transfer_server()
         
 
         self.mainloop()
