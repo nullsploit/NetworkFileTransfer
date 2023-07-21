@@ -75,6 +75,7 @@ def transmit(sock, folder, files):
 
 def send_data():
     s = socket.socket()
+    s.settimeout(0.5)
     s.connect((Program.selected_server, 4563))
     with s:
         transmit(s, "Data", Program.selected_files)
