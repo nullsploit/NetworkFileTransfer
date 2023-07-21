@@ -76,6 +76,7 @@ def transmit(sock, folder, files):
 def send_data():
     s = socket.socket()
     s.settimeout(0.5)
+    print(f"Using server {Program.selected_server}")
     s.connect((Program.selected_server, 4563))
     with s:
         transmit(s, "Data", Program.selected_files)
@@ -191,11 +192,13 @@ def discovery_server(app):
 
 
 def server():
+    print("Starting transfer server...")
     # if __name__ == '__main__':
     network_ip = get_ip_address()
     s = socket.socket()
     s.bind((network_ip, 4563))
     s.listen()
+    print("Started transfer server")
 
     while True:
         client, address = s.accept()
@@ -214,12 +217,15 @@ def server():
                 folderpath = os.path.join('Downloads', folder)
                 os.makedirs(folderpath, exist_ok=True)
                 for i in range(no_files):
-                    filename = clientfile.readline().strip().decode()
+                    # filename = clientfile.readline().strip().decode()
+                    filename = clientfile.readline().strip().decode().split("\\")[-1].split("/")[-1]
                     filesize = int(clientfile.readline())
                     data = clientfile.read(filesize)
                     print(f'Receiving file: {filename} ({filesize} bytes)')
                     with open(os.path.join(folderpath, filename), 'wb') as f:
                         f.write(data)
+                    print(f'Received file: {filename} ({filesize} bytes)')
+
 
 
 def select_server(server_ip):
