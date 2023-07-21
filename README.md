@@ -1,5 +1,5 @@
 # NetworkFileTransfer
-## !!! Linux support only (Windows support coming soon) !!!
+
 ## Compile
 Create virtual environment
 ```bash

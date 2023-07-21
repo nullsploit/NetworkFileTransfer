@@ -8,6 +8,13 @@ import threading
 from __main__ import Program
 
 
+def is_windows():
+    if os.name == 'nt':
+        return True
+    else:
+        return False
+
+
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
@@ -15,7 +22,11 @@ def get_ip_address():
 
 
 def selectFile(app):
-    files = fd.askopenfiles(initialdir = "/home")
+    if is_windows():
+        files = fd.askopenfiles(initialdir = "c:\\")
+    else:
+        files = fd.askopenfiles(initialdir = "/home")
+
     file_list = [file.name for file in files]
 
     if len(file_list) > 0:
@@ -28,7 +39,7 @@ def selectFile(app):
         Program.selected_folder = None
     
     for file in file_list:
-        label = customtkinter.CTkLabel(app.scrollable_frame, text=f"{file.split('/')[-1]}", fg_color="transparent")
+        label = customtkinter.CTkLabel(app.scrollable_frame, text=f"{file.split(Program.slash_seperator)[-1]}", fg_color="transparent")
         label.pack(anchor=NW)
         setattr(app, file, label)
 
@@ -52,7 +63,7 @@ def transmit(sock, folder, files):
     # files = os.listdir(folder)
     send_int(sock, len(files))
     for file in files:
-        filename = file.split("/")[-1]
+        filename = file.split(Program.slash_seperator)[-1]
         # path = os.path.join(folder, file)
         path = file
         filesize = os.path.getsize(path)
@@ -83,39 +94,40 @@ def start_discovery_client(app):
 
 def discovery_client(app):
     network_ip = get_ip_address()
-    print(f"IP: {network_ip}")
+    # print(f"IP: {network_ip}")
+    print("Finding servers...")
 
-    while True:
 
-        ip_prefix = ".".join(network_ip.split(".")[0:-1])
-        for ip_suffix in range(253):
-            ip_suffix +=1
+    ip_prefix = ".".join(network_ip.split(".")[0:-1])
+    for ip_suffix in range(253):
+        ip_suffix +=1
 
-            full_ip = f"{ip_prefix}.{ip_suffix}"
-            # print(f"checking '{ip_prefix}.{ip_suffix}'...")
-            try:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.settimeout(0.1)
-                    s.connect((f"{full_ip}", 4562))
+        full_ip = f"{ip_prefix}.{ip_suffix}"
+        # print(f"checking '{ip_prefix}.{ip_suffix}'...")
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(0.1)
+                s.connect((f"{full_ip}", 4562))
 
-                    if f"{full_ip}" not in Program.discovered_servers and not f"{full_ip}" == network_ip:
-                    # print(f"Found '{ip_prefix}.{ip_suffix}' is valid host")
-                        Program.discovered_servers.append(f"{full_ip}")
+                if f"{full_ip}" not in Program.discovered_servers and not f"{full_ip}" == network_ip:
+                    print(f"Found '{ip_prefix}.{ip_suffix}' is valid host")
+                    Program.discovered_servers.append(f"{full_ip}")
 
-                        server_button = customtkinter.CTkButton(text=full_ip, command=select_server(full_ip), master=app.sidebar_frame)
-                        server_button.grid(pady=4)
-                        setattr(app.sidebar_frame, f"server-{full_ip}", server_button)
+                    server_button = customtkinter.CTkButton(text=full_ip, command=select_server(full_ip), master=app.sidebar_frame)
+                    server_button.grid(pady=4)
+                    setattr(app.sidebar_frame, f"server-{full_ip}", server_button)
 
-                        s.sendall(b"conn-ping")
-                        s.close()
-            except:
-                pass
+                    s.sendall(b"conn-ping")
+                    s.close()
+        except:
+            pass
                 # if f"{ip_prefix}.{ip_suffix}" in Program.discovered_servers:
                 #     button = getattr(app.sidebar_frame, f"server-{ip_prefix}.{ip_suffix}")
                 #     button.destroy()
                 #     Program.discovered_servers.remove(f"{ip_prefix}.{ip_suffix}")
                 # s.sendall(b"Hello, world")
                 # data = s.recv(1024)
+    print("Stopped finding servers")
 
 
 def discovery_server(app):

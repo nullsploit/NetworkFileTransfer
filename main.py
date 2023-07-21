@@ -8,6 +8,7 @@ class Program:
     discovered_servers = []
     selected_server = None
     app = None
+    slash_seperator = ""
 
 from func import *
 
@@ -46,12 +47,12 @@ class App(customtkinter.CTk):
 
         # self.folder_button = customtkinter.CTkButton(text="Select Folder", command=lambda:selectFolder(self), master=self.sidebar_frame)
         # self.folder_button.grid(pady=4)
+        self.discovery_server_button = customtkinter.CTkButton(text=f"Scan", command=lambda:start_discovery_client(), master=self.sidebar_frame)
+        self.discovery_server_button.grid(pady=4)
 
         label = customtkinter.CTkLabel(self.sidebar_frame, text="Servers", fg_color="transparent")
         label.grid(pady=4)
 
-        # self.discovery_server_button = customtkinter.CTkButton(text=f"Start Server", command=start_discovery_server, master=self.sidebar_frame)
-        # self.discovery_server_button.grid(pady=4)
 
         self.send_button = customtkinter.CTkButton(text="Send", command=lambda:upload(self), master=self)
         self.send_button.grid(padx=4, pady=4, column=1, row=1)
@@ -63,6 +64,11 @@ class App(customtkinter.CTk):
 
         self.mainloop()
 
+
+if is_windows():
+    Program.slash_seperator = "\\"
+else:
+    Program.slash_seperator = "/"
 
 if __name__ == "__main__":
     app = App()
