@@ -100,7 +100,7 @@ def start_transfer_server():
 def discovery_client(app):
     network_ip = get_ip_address()
     # print(f"IP: {network_ip}")
-    print("Finding servers...")
+    print("[+] Finding servers...")
 
 
     ip_prefix = ".".join(network_ip.split(".")[0:-1])
@@ -141,7 +141,7 @@ def discovery_client(app):
                 #     Program.discovered_servers.remove(f"{ip_prefix}.{ip_suffix}")
                 # s.sendall(b"Hello, world")
                 # data = s.recv(1024)
-    print("Stopped finding servers")
+    print("[-] Stopped finding servers")
 
 
 def discovery_server(app):
@@ -162,7 +162,7 @@ def discovery_server(app):
         print("Server not started")
         return
     else:
-        print("Starting discovery server")
+        print("[+] Starting discovery server")
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # ENABLE SOCKET REUSE
@@ -170,7 +170,7 @@ def discovery_server(app):
 
         s.bind((HOST, PORT))
         s.listen()
-        print("discovery server started")
+        print("[+] discovery server started")
         conn, addr = s.accept()
         with conn:
             # print(f"Connected by {addr}")
@@ -182,7 +182,7 @@ def discovery_server(app):
                 if data.decode() == "conn-ping":
                     conn.sendall(network_ip.encode())
         Program.discovery_server_status = False
-        print("Stopped discovery server")
+        print("[-] Stopped discovery server")
         
         start_discovery_server(app)
         # discovery_button = customtkinter.CTkButton(text="Start Discovery", command=lambda:start_discovery_server(app), master=app.sidebar_frame)
@@ -202,13 +202,13 @@ def discovery_server(app):
 
 
 def server():
-    print("Starting transfer server...")
+    print("[+] Starting transfer server...")
     # if __name__ == '__main__':
     network_ip = get_ip_address()
     s = socket.socket()
     s.bind((network_ip, 4563))
     s.listen()
-    print("Started transfer server")
+    print("[+] Started transfer server")
 
     while True:
         client, address = s.accept()

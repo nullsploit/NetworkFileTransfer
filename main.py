@@ -50,6 +50,11 @@ class App(customtkinter.CTk):
         self.discovery_server_button = customtkinter.CTkButton(text=f"Scan", command=lambda:start_discovery_client(self), master=self.sidebar_frame)
         self.discovery_server_button.grid(pady=4)
 
+
+        # self.discovery_server_button = customtkinter.CTkButton(text=f"Discovery Server", command=lambda:start_discovery_server(self), master=self.sidebar_frame)
+        # self.discovery_server_button.grid(pady=4)
+        
+
         label = customtkinter.CTkLabel(self.sidebar_frame, text="Servers", fg_color="transparent")
         label.grid(pady=4)
 
